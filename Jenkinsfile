@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        function_name = 'java-sample'
+        function_name = 'lamb'
     }
 
     stages {
@@ -23,7 +23,7 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                echo 'Build'
+                echo 'deploy'
 
                 sh "aws lambda update-function-code --function-name $function_name --region us-east-1 --s3-bucket tesjavas3 --s3-key sample-1.0.3.jar"
             }
