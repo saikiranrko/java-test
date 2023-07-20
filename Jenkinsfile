@@ -21,13 +21,13 @@ pipeline {
             }
         }
         stage("SonarQube analysis") {
-            agent any
+             agent any
 
-            when {
-                anyOf {
-                    branch 'feature/*'
-                    branch 'main'
-                }
+             when {
+                 anyOf {
+                     branch 'feature/*'
+                     branch 'main'
+                 }
              }
              steps {
                  withSonarQubeEnv('Sonar') {
