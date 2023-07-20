@@ -20,6 +20,12 @@ pipeline {
                 sh "aws s3 cp target/sample-1.0.3.jar s3://bucket32011"
             }
         }
+        stage('SonarQube') {
+            steps {
+                echo 'Sonar-scanner'
+                //sh 'mvn package'
+            }
+        }
 
         stage('Deploy') {
             steps {
