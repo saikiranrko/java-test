@@ -1,48 +1,71 @@
 pipeline {
     agent any
 
+    parameters {
+        string(name: 'GIT_BRANCH', defaultValue: 'master', description: 'Git branch to build')
+        booleanParam(name: 'RUN_TESTS', defaultValue: true, description: 'Run tests during the build')
+    }
+
     environment {
-        function_name = 'java_sample'
+        // Reading default Jenkins environment variables
+        def defaultNode = env.NODE_NAME
+        def defaultWorkspace = env.WORKSPACE
     }
 
     stages {
+        stage('Checkout') {
+            steps {
+                echo 'Checking out code from Git'
+                checkout([$class: 'GitSCM', branches: [[name: "${params.GIT_BRANCH}"]], userRemoteConfigs: [[url: 'https://github.com/your-repo.git']]])
+            }
+        }
+
         stage('Build') {
             steps {
-                echo 'Build'
-                sh 'mvn package'
+                echo "Building on ${defaultNode} using ${defaultWorkspace}"
+                sh 'mvn clean package'
             }
         }
 
-        stage('Push') {
+        stage('Test') {
+            when {
+                expression { params.RUN_TESTS }
+            }
             steps {
-                echo 'Push'
-
-                sh "aws s3 cp target/sample-1.0.3.jar s3://bucket32011"
+                echo 'Running tests'
+                sh 'mvn test'
             }
         }
-        stage("SonarQube analysis") {
-             agent any
 
-             when {
-                 anyOf {
-                     branch 'feature/*'
-                     branch 'main'
-                 }
-             }
-             steps {
-                 withSonarQubeEnv('Sonar') {
-                     sh 'mvn sonar:sonar'
-                 }
-             }
-         }
+        stage('SonarQube') {
+            steps {
+                echo 'Running SonarQube analysis'
+                withSonarQubeEnv('Your_SonarQube_Server_Name') {
+                    sh 'mvn sonar:sonar'
+                }
+            }
+        }
 
         stage('Deploy') {
             steps {
-                echo 'deploy'
-
-                sh "aws lambda update-function-code --function-name $function_name --region us-east-1 --s3-bucket bucket32011 --s3-key sample-1.0.3.jar"
+                echo 'Deploying the application'
+                // Your deployment steps go here
             }
         }
     }
-}
 
+    post {
+        always {
+            echo 'This will always run'
+            // Additional post-build actions here
+        }
+        success {
+            echo 'This will run only if the build is successful'
+            // Additional actions for successful builds here
+        }
+        failure {
+            echo 'This will run only if the build fails'
+            // Additional actions for failed builds here
+        }
+    }
+}
