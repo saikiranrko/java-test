@@ -2,7 +2,7 @@ pipeline {
     agent { label 'master'}
 
     environment {
-        function_name = 'java-sample'
+        function_name = 'java-sample' 
     }
 
     stages {
