@@ -6,12 +6,12 @@ pipeline {
         booleanParam(name: 'RUN_TESTS', defaultValue: true, description: 'Run tests during the build')
     }
 
-    environment {
+   /*  environment {
         // Reading default Jenkins environment variables
         def defaultNode = env.NODE_NAME
         def defaultWorkspace = env.WORKSPACE
     }
-
+ */
     stages {
         stage('Checkout') {
             steps {
