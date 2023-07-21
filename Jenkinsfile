@@ -1,70 +1,149 @@
 pipeline {
-    agent any
+    agent { label 'master'}
 
-    parameters {
-        string(name: 'GIT_BRANCH', defaultValue: 'master', description: 'Git branch to build')
-        booleanParam(name: 'RUN_TESTS', defaultValue: true, description: 'Run tests during the build')
+    environment {
+        function_name = 'java-sample'
     }
 
-   /*  environment {
-        // Reading default Jenkins environment variables
-        def defaultNode = env.NODE_NAME
-        def defaultWorkspace = env.WORKSPACE
-    }
- */
     stages {
+
+        // CI Start
+
+        stage('Declarative: Checkout SCM') {
+            steps {
+                echo 'Declarative: Checkout SCM'
+               // sh 'mvn package'
+            }
+        } 
+
         stage('Checkout') {
             steps {
-                echo 'Checking out code from Git'
-               // checkout([$class: 'GitSCM', branches: [[name: "${params.GIT_BRANCH}"]], userRemoteConfigs: [[url: 'https://github.com/your-repo.git']]])
+                echo 'Checkout'
+                //sh 'mvn package'
             }
         }
-
+        
         stage('Build') {
             steps {
-                echo "Building"
-               
+                echo 'Build'
+                sh 'mvn package'
             }
         }
 
-        stage('Test') {
-            when {
-                expression { params.RUN_TESTS }
-            }
+
+        // stage("SonarQube analysis") {
+        //     agent any
+
+        //     when {
+        //         anyOf {
+        //             branch 'feature/*'
+        //             branch 'main'
+        //         }
+        //     }
+        //     steps {
+        //         withSonarQubeEnv('Sonar') {
+        //             sh 'mvn sonar:sonar'
+        //         }
+        //     }
+        // }
+
+        // stage("Quality Gate") {
+        //     steps {
+        //         script {
+        //             try {
+        //                 timeout(time: 10, unit: 'MINUTES') {
+        //                     waitForQualityGate abortPipeline: true
+        //                 }
+        //             }
+        //             catch (Exception ex) {
+
+        //             }
+        //         }
+        //     }
+        // }
+
+        stage('test') {
             steps {
-                echo 'Running tests'
-               
+                echo 'test'
+
+               // sh "aws s3 cp target/sample-1.0.3.jar s3://bucket32011"
             }
         }
 
         stage('SonarQube') {
             steps {
-                echo 'Running SonarQube analysis'
-               
+                echo 'SonarQube'
+                //sh 'mvn package'
+            }
+        }
+
+        // Ci Ended
+
+        // CD Started
+
+        stage('Deployments') {
+            parallel {
+
+                stage('Deploy to Dev') {
+                    steps {
+                        echo 'Build'
+
+                        sh "aws lambda update-function-code --function-name $function_name --region us-east-1 --s3-bucket bucket32011 --s3-key sample-1.0.3.jar"
+                    }
+                }
+
+                stage('Deploy to test ') {
+                    when {
+                        branch 'main'
+                    }
+                    steps {
+                        echo 'Build'
+
+                        // sh "aws lambda update-function-code --function-name $function_name --region us-east-1 --s3-bucket bermtecbatch31 --s3-key sample-1.0.3.jar"
+                    }
                 }
             }
         }
 
-        stage('Deploy') {
+        stage('Deploy to Prod') {
+            when {
+                branch 'main'
+            }
             steps {
-                echo 'Deploying the application'
-                // Your deployment steps go here
+               input (
+                    message: 'Are we good for Prod Deployment ?'
+               )
             }
         }
+
+        stage('Release to Prod') {
+            when {
+                branch 'main'
+            }
+            steps {
+                sh "aws lambda update-function-code --function-name $function_name --region us-east-1 --s3-bucket bucket32011 --s3-key sample-1.0.3.jar"
+            }
+        }
+
+
+        
+
+        // CD Ended
     }
 
     post {
         always {
-            echo 'This will always run'
-            // Additional post-build actions here
+            echo "${env.BUILD_ID}"
+            echo "${BRANCH_NAME}"
+            echo "${BUILD_NUMBER}"
+
         }
-        success {
-            echo 'This will run only if the build is successful'
-            // Additional actions for successful builds here
-        }
+
         failure {
-            echo 'This will run only if the build fails'
-            // Additional actions for failed builds here
+            echo 'failed'
+        }
+        aborted {
+            echo 'aborted'
         }
     }
 }
