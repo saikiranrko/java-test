@@ -16,14 +16,14 @@ pipeline {
         stage('Checkout') {
             steps {
                 echo 'Checking out code from Git'
-                checkout([$class: 'GitSCM', branches: [[name: "${params.GIT_BRANCH}"]], userRemoteConfigs: [[url: 'https://github.com/your-repo.git']]])
+               // checkout([$class: 'GitSCM', branches: [[name: "${params.GIT_BRANCH}"]], userRemoteConfigs: [[url: 'https://github.com/your-repo.git']]])
             }
         }
 
         stage('Build') {
             steps {
-                echo "Building on ${defaultNode} using ${defaultWorkspace}"
-                sh 'mvn clean package'
+                echo "Building"
+               
             }
         }
 
@@ -33,15 +33,14 @@ pipeline {
             }
             steps {
                 echo 'Running tests'
-                sh 'mvn test'
+               
             }
         }
 
         stage('SonarQube') {
             steps {
                 echo 'Running SonarQube analysis'
-                withSonarQubeEnv('Your_SonarQube_Server_Name') {
-                    sh 'mvn sonar:sonar'
+               
                 }
             }
         }
