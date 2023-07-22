@@ -12,7 +12,7 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Building the application'
-                //sh 'mvn clean package'
+                sh 'mvn clean package'
             }
         }
 
@@ -27,7 +27,7 @@ pipeline {
             steps {
                 echo 'Running SonarQube analysis'
                 withSonarQubeEnv('Your_SonarQube_Server_Name') {
-                    sh 'mvn sonar:sonar'
+                   // sh 'mvn sonar:sonar'
                 }
             }
         }
