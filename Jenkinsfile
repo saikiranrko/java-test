@@ -26,8 +26,8 @@ pipeline {
         stage('SonarQube') {
             steps {
                 echo 'Running SonarQube analysis'
-                //withSonarQubeEnv('Your_SonarQube_Server_Name') {
-                //    sh 'mvn sonar:sonar'
+                withSonarQubeEnv('Your_SonarQube_Server_Name') {
+                    sh 'mvn sonar:sonar'
                 }
             }
         }
